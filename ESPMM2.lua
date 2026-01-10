@@ -18,11 +18,11 @@ local function getRoleColor(plr)
 	end
 
 	if hasTool("Knife") then
-		return Color3.fromRGB(255, 0, 0) -- Asesino
+		return Color3.fromRGB(255, 0, 0)
 	elseif hasTool("Gun") then
-		return Color3.fromRGB(0, 150, 255) -- Sheriff
+		return Color3.fromRGB(0, 150, 255)
 	else
-		return Color3.fromRGB(0, 255, 0) -- Inocente
+		return Color3.fromRGB(0, 255, 0)
 	end
 end
 
@@ -76,7 +76,7 @@ local function updateHighlights()
 end
 
 -- ======================
--- RE-SINCRONIZAR RESPAWN
+-- RESPAWN
 -- ======================
 local function hookPlayer(plr)
 	plr.CharacterAdded:Connect(function()
@@ -90,24 +90,20 @@ end
 for _, plr in pairs(Players:GetPlayers()) do
 	hookPlayer(plr)
 end
-
 Players.PlayerAdded:Connect(hookPlayer)
 
 -- ======================
--- TOGGLE GENERAL
+-- TOGGLE (NO TOCADO)
 -- ======================
 local function toggle(button)
 	enabled = not enabled
 
 	if enabled then
-		if button then button.Text = "ON" end
+		if button then button.Text = "ROLE ESP: ON" end
 		updateHighlights()
-
-		heartbeatConn = RunService.Heartbeat:Connect(function()
-			updateHighlights()
-		end)
+		heartbeatConn = RunService.Heartbeat:Connect(updateHighlights)
 	else
-		if button then button.Text = "OFF" end
+		if button then button.Text = "ROLE ESP: OFF" end
 		if heartbeatConn then
 			heartbeatConn:Disconnect()
 			heartbeatConn = nil
@@ -127,57 +123,24 @@ UIS.InputBegan:Connect(function(input, gp)
 end)
 
 -- ======================
--- BOTÓN FLOTANTE
+-- BOTÓN NUEVO (IGUAL A LOS OTROS)
 -- ======================
 local gui = Instance.new("ScreenGui")
+gui.Name = "RoleESP_GUI"
 gui.ResetOnSpawn = false
-gui.AutoLocalize = false -- 👈 evita NO / EN
 gui.Parent = player:WaitForChild("PlayerGui")
 
-local btn = Instance.new("TextButton")
-btn.Size = UDim2.new(0, 120, 0, 50)
-btn.Position = UDim2.new(0.7, 0, 0.6, 0)
-btn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-btn.TextScaled = true
-btn.Text = "OFF"
-btn.Parent = gui
+local button = Instance.new("TextButton")
+button.Size = UDim2.fromOffset(150, 40)
+button.Position = UDim2.fromScale(0.05, 0.7)
+button.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.TextScaled = true
+button.Text = "ROLE ESP: OFF"
+button.Parent = gui
+button.Active = true
+button.Draggable = true
 
--- ======================
--- ARRASTRAR BOTÓN
--- ======================
-local dragging = false
-local dragStart, startPos
-
-btn.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = true
-		dragStart = input.Position
-		startPos = btn.Position
-	end
-end)
-
-btn.InputEnded:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = false
-	end
-end)
-
-UIS.InputChanged:Connect(function(input)
-	if dragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
-		local delta = input.Position - dragStart
-		btn.Position = UDim2.new(
-			startPos.X.Scale,
-			startPos.X.Offset + delta.X,
-			startPos.Y.Scale,
-			startPos.Y.Offset + delta.Y
-		)
-	end
-end)
-
--- ======================
--- CLICK BOTÓN
--- ======================
-btn.MouseButton1Click:Connect(function()
-	toggle(btn)
+button.MouseButton1Click:Connect(function()
+	toggle(button)
 end)
